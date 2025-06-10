@@ -1,36 +1,27 @@
 from flask import Flask, jsonify
-import requests
+import praw
 
 app = Flask(__name__)
 
-CLIENT_ID = 'A2yfynaJYdbYdtBLbgw-aA'
-CLIENT_SECRET = 'VenDgxZ38Nr4shiZfz_Y5tPv37E33g'
-USER_AGENT = 'REI Spreadsheet App'
+# Initialize Reddit client
+reddit = praw.Reddit(
+    client_id='YOUR_CLIENT_ID',
+    client_secret='YOUR_CLIENT_SECRET',
+    user_agent='YourAppName'
+)
 
-def get_token():
-    auth = requests.auth.HTTPBasicAuth(CLIENT_ID, CLIENT_SECRET)
-    headers = {"User-Agent": USER_AGENT}
-    data = {"grant_type": "client_credentials"}
-    res = requests.post("https://www.reddit.com/api/v1/access_token",
-                        auth=auth, data=data, headers=headers)
-    return res.json().get("access_token")
-
-@app.route("/subreddit/<sub>")
-def get_subreddit(sub):
-    token = get_token()
-    headers = {"Authorization": f"bearer {token}", "User-Agent": USER_AGENT}
-    res = requests.get(f"https://oauth.reddit.com/r/{sub}/about", headers=headers)
-
-    if res.status_code != 200:
-        return jsonify({"error": res.status_code}), res.status_code
-
-    data = res.json().get("data", {})
-    return jsonify({
-        "subscribers": data.get("subscribers"),
-        "active_users": data.get("accounts_active"),
-        "title": data.get("title"),
-        "description": data.get("public_description")
-    })
+@app.route("/subreddit/<name>")
+def get_subreddit_data(name):
+    try:
+        subreddit = reddit.subreddit(name)
+        return jsonify({
+            "subreddit": name,
+            "subscribers": subreddit.subscribers,
+            "active_users": subreddit.accounts_active,
+            # Add more stats here if needed
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
