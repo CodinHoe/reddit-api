@@ -21,10 +21,10 @@ def get_subreddit_data(name):
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-@app.route("/reddit_data")
-def reddit_data():
-    return "Reddit API is running!"
+        
+@app.route("/")
+def home():
+    return "✅ Flask Reddit API is live! Try /reddit_data or /subreddit/python"
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
