@@ -5,9 +5,9 @@ import os
 app = Flask(__name__)
 
 reddit = praw.Reddit(
-    client_id='YOUR_CLIENT_ID',
-    client_secret='YOUR_CLIENT_SECRET',
-    user_agent='YourAppName'
+    client_id=os.environ.get("REDDIT_CLIENT_ID"),
+    client_secret=os.environ.get("REDDIT_CLIENT_SECRET"),
+    user_agent="myredditapp/0.1 by u/yourusername"
 )
 
 @app.route("/subreddit/<name>")
