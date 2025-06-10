@@ -9,6 +9,11 @@ reddit = praw.Reddit(
     client_secret=os.environ.get("REDDIT_CLIENT_SECRET"),
     user_agent="myredditapp/0.1 by u/yourusername"
 )
+reddit.read_only = True
+
+@app.route("/")
+def home():
+    return "✅ Flask Reddit API is live! Try /reddit_data or /subreddit/python"
 
 @app.route("/subreddit/<name>")
 def get_subreddit_data(name):
@@ -21,10 +26,10 @@ def get_subreddit_data(name):
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-        
-@app.route("/")
-def home():
-    return "✅ Flask Reddit API is live! Try /reddit_data or /subreddit/python"
+
+@app.route("/reddit_data")
+def reddit_data():
+    return "Reddit API is running!"
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
