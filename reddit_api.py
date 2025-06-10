@@ -1,6 +1,7 @@
 from flask import Flask, jsonify
 import praw
 import os
+import datetime
 
 app = Flask(__name__)
 
@@ -19,11 +20,34 @@ def home():
 def get_subreddit_data(name):
     try:
         subreddit = reddit.subreddit(name)
+
+        # Time filtering
+        now = datetime.datetime.utcnow()
+        one_day_ago = now - datetime.timedelta(days=1)
+        one_day_timestamp = one_day_ago.timestamp()
+
+        post_count = 0
+        total_comments = 0
+        total_score = 0
+
+        # Fetch up to 100 'new' posts and filter by timestamp
+        for post in subreddit.new(limit=100):
+            if post.created_utc >= one_day_timestamp:
+                post_count += 1
+                total_comments += post.num_comments
+                total_score += post.score  # Karma
+
+        avg_karma = total_score / post_count if post_count > 0 else 0
+
         return jsonify({
             "subreddit": name,
             "subscribers": subreddit.subscribers,
             "active_users": subreddit.accounts_active,
+            "posts_per_day": post_count,
+            "comments_per_day": total_comments,
+            "avg_karma": round(avg_karma, 2)
         })
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
